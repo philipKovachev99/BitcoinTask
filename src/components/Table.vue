@@ -43,7 +43,7 @@ import axios from 'axios';
             return {currency: key, ...response.data[key]}
           })
           this.bitcoinInfo = convertedCollection
-      })) 
+      })).catch(err => console.log(err))
         },
       },
            
