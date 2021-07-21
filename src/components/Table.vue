@@ -4,6 +4,7 @@
       :headers="headers"
       :items="bitcoinInfo"
       :hide-default-footer="true"
+      class="primary"
     >
       <template #item.thirtyDaysDiff="{ item }">
         <td>{{ calculateThirtyDayDifference(item) }}%</td>
