@@ -2,15 +2,15 @@
 <div>
  <v-data-table
       :headers="headers"
-      :items="bitcoinInfo"
+      :items="rowsToDisplay"
       :hide-default-footer="true"
       class="primary"
     >
       <template #item.thirtyDaysDiff="{ item }">
-        <td>{{ calculateThirtyDayDifference(item) }}%</td>
+            <span :class="item.thirtyDaysDiffClass">{{ item.thirtyDaysDiff }}%</span>
       </template>
       <template #item.sevenDaysDifference="{ item }">
-       <td>{{ calculateThirtyDayDifference(item) }}%</td>
+            <span :class="item.sevenDaysDiffClass">{{ item.sevenDaysDiff }}%</span>
       </template>
     </v-data-table>
 </div>
@@ -41,6 +41,7 @@ import axios from 'axios';
     },
 
     methods: {
+      
       getBitcoinData() {
         axios
       .get('data.json')
@@ -56,11 +57,15 @@ import axios from 'axios';
         },
 
        
-        calculateThirtyDayDifference(item) {
-
-         let calculatedPercent = 100 * Math.abs((item['7d'] - item['30d']) / ((item['7d'] + item['30d']) / 2));
+      calculateDifference(a, b) {
+      let calculatedPercent = 100 * Math.abs((a - b) / ((a + b) / 2));
       return Math.max(Math.round(calculatedPercent * 10) / 10, 2.8).toFixed(2);
-       },
+    },
+
+       getDiffClass(a, b) {
+      return a > b ? 'positive' : a < b ? 'negative' : ''
+     },
+
 
        calculateSevenDayDifference(item) {
 
@@ -68,10 +73,37 @@ import axios from 'axios';
       return Math.max(Math.round(calculatedPercent * 10) / 10, 2.8).toFixed(2);
        }
       },
-        
+         computed: {
+    rowsToDisplay() {
+      return Object.keys(this.bitcoinInfo)
+        .map(key => {
+          return {
+            currency: key,
+            ...this.bitcoinInfo[key]
+          }
+        }).map((item) => ({
+          ...item,
+          thirtyDaysDiff: this.calculateDifference(item['7d'], item['30d']),
+          thirtyDaysDiffClass: this.getDiffClass(item['7d'], item['30d']),
+          sevenDaysDiff: this.calculateDifference(item['24h'], item['7d']),
+          sevenDaysDiffClass: this.getDiffClass(item['24h'], item['7d']),
+        }))
+    }
+  },
       mounted() {
         this.getBitcoinData()
       }
   }
 
 </script>
+
+
+<style>
+.negative {
+  color: red;
+}
+
+.positive {
+  color: green;
+}
+</style>
